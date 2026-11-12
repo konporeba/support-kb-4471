@@ -1,0 +1,67 @@
+---
+layout: runbook
+title: '#4471 · three problems, not one'
+owner: konporeba
+status: open
+reviewed: 2026-11-12
+signature: konporeba
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+</script>
+
+[#4471](/kb/incidents/4471) says one issue, one fix queued. Its own table already disagrees: it
+shows two causes and footnotes a third. This page splits the ticket into the problems it holds,
+one ticket each, so each one can get its own fix.
+
+<Callout kind="warn">
+Not one issue. The queued parser fix closes only the <code>parser</code> row. The other two keep
+coming after it ships.
+</Callout>
+
+## What is in #4471
+
+<ProblemTable ticket={4471} issues={{
+  parser: 'https://github.com/konporeba/support-kb-4471/issues/1',
+  hint: 'https://github.com/konporeba/support-kb-4471/issues/2',
+  shift: 'https://github.com/konporeba/support-kb-4471/issues/3',
+}} />
+
+## How the reports were told apart
+
+Every report was merged on its subject line ([decision 0001](/kb/decisions/0001-dedupe-by-subject)),
+and the subjects say nothing about the cause: each problem shows up under several subjects, and
+the same subject turns up under more than one problem. So the split goes by what the body says
+and where the report came from, never by the subject.
+
+- **A swap or a shift?** Read the two dates in the body. Booked 7 April, invite on 4 July is a
+  swap: the day and the month changed places. Invite on Tuesday 12 May, calendar on Monday 11 May
+  is a shift: one day, no swap. The desk had already marked the shifts (`oneDayMove` in
+  `desk-notes.json`); they get their own row here, not a footnote.
+- **Which swap?** It depends on the tenant, not the reporter's browser (`causes.ts`). Every tenant on
+  file writes the day first. A report sent through a booking-v3 form went through a form that
+  prints `MM/DD/YYYY` under its date field: that is `hint`. Everything else hit the shared parser:
+  that is `parser`.
+- **Count each report once.** The export repeats some rows; one id is one report.
+
+The tag intake put on a report is a guess from the reporter's browser. It disagrees with the
+problem often enough that a triage step should not lean on it.
+
+## Where each fix goes
+
+- `parser`: the queued fix. Parse in the tenant's locale, not month first.
+- `hint`: the booking-v3 date field. Print the tenant's own format under it, or read what the
+  hint asks for. The parser fix does not touch this path.
+- `shift`: wherever the invite date is turned into a time zone. A one-day move before or after
+  the parser fix means this one is still open.
+
+## For the desk
+
+Merging by subject put three problems in one ticket and marked them known. Until the triage rule
+changes, when a big ticket is marked known, check its cause table before you close new reports
+into it: a second row means a second ticket.
+
+<RenderStamp {signature} />
