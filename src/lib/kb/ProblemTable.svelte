@@ -10,7 +10,7 @@
 
   const merged = $derived(mergedInto(rows as Report[], ticket));
   const groups = $derived(groupByProblem(merged.reports, tenantOf, notes.oneDayMove));
-  const covered = $derived(groups.reduce((n, g) => n + g.reports.length, 0));
+  const filedOnce = $derived(groups.filter((g) => g.problem !== 'shift').reduce((n, g) => n + g.reports.length, 0));
   const list = (n: Record<string, number>) =>
     Object.entries(n)
       .sort((a, b) => b[1] - a[1])
@@ -23,7 +23,7 @@
   <strong>{merged.reports.length}</strong> reports merged into #{ticket}
   ({merged.rows} export rows, {merged.rows - merged.reports.length} repeated) ·
   <strong>{groups.length}</strong> {groups.length === 1 ? 'problem' : 'problems'} ·
-  {covered === merged.reports.length ? 'every report placed once' : `${merged.reports.length - covered} reports not placed`}
+  {filedOnce === merged.reports.length ? 'every report counted once under its cause' : `${merged.reports.length - filedOnce} reports not placed`}
 </p>
 
 <table>
@@ -35,7 +35,7 @@
       {@const url = g.problem === 'unplaced' ? undefined : issues[g.problem]}
       <tr>
         <td><code>{g.problem}</code><br /><span class="what">{WHAT[g.problem]}</span></td>
-        <td class="n">{g.reports.length}</td>
+        <td class="n">{g.reports.length}{#each Object.entries(g.alsoIn) as [p, n] (p)}<br /><span class="also">{n} also in <code>{p}</code></span>{/each}</td>
         <td>{g.tenants.length}</td>
         <td class="tags">{list(g.channels)}</td>
         <td class="tags">{list(g.taggedAs)}{#if mistagged(g)}<br /><span class="off">{mistagged(g)} tagged as something else</span>{/if}</td>
@@ -59,6 +59,7 @@
   .n { font-weight: 600; font-variant-numeric: tabular-nums; }
   .tags { color: var(--muted); font-size: 0.82em; }
   .off { color: var(--warn); font-weight: 600; }
+  .also { color: var(--muted); font-size: 0.75em; font-weight: 400; white-space: nowrap; }
   details { margin: 0.25rem 0; font-size: 0.9rem; }
   summary { cursor: pointer; }
   .ids { font: 0.78rem/1.5 var(--mono); color: var(--muted); word-spacing: 0.3em; }

@@ -40,7 +40,8 @@ and where the report came from, never by the subject.
 - **A swap or a shift?** Read the two dates in the body. Booked 7 April, invite on 4 July is a
   swap: the day and the month changed places. Invite on Tuesday 12 May, calendar on Monday 11 May
   is a shift: one day, no swap. The desk had already marked the shifts (`oneDayMove` in
-  `desk-notes.json`); they get their own row here, not a footnote.
+  `desk-notes.json`); they get their own row and ticket here, not a footnote, and stay counted
+  under their tenant's cause, as the desk's own table counts them.
 - **Which swap?** It depends on the tenant, not the reporter's browser (`causes.ts`). Every tenant on
   file writes the day first. A report sent through a booking-v3 form went through a form that
   prints `MM/DD/YYYY` under its date field: that is `hint`. Everything else hit the shared parser:

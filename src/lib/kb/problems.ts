@@ -4,7 +4,8 @@
 // Both are a day/month swap. A one-day move is not a swap: no parser or hint reading turns 12 May
 // into 11 May, or gives Lisbon Tuesday and Toronto Monday for the same meeting. The desk already
 // lists those reports in desk-notes.json (`oneDayMove`); here they get a row of their own instead
-// of a footnote under the tenant's cause.
+// of a footnote. Counts follow the desk's view (CauseTable): every report stays counted under the
+// cause its tenant files it under, so the `shift` row is also inside its tenant's row (`alsoIn`).
 import { causeOf, uniqueById, type Report, type Tenant } from '#lib/kb/causes';
 
 export type Problem = 'parser' | 'hint' | 'shift';
@@ -18,14 +19,11 @@ export const WHAT: Record<Problem | 'unplaced', string> = {
   unplaced: 'No tenant on file, or a tenant that writes the month first: no known cause.',
 };
 
-export function problemOf(r: Report, t: Tenant | undefined, shiftIds: readonly string[]): Problem | 'unplaced' {
-  if (shiftIds.includes(r.id)) return 'shift';
-  return causeOf(r, t) ?? 'unplaced';
-}
-
 export type ProblemGroup = {
   problem: Problem | 'unplaced';
   reports: Report[];
+  // Rows these reports are also counted in (the desk files a one-day move under its tenant's cause).
+  alsoIn: Record<string, number>;
   taggedAs: Record<string, number>;
   tenants: string[];
   channels: Record<string, number>;
@@ -40,9 +38,11 @@ export function groupByProblem(
   shiftIds: readonly string[],
 ): ProblemGroup[] {
   const by = new Map<ProblemGroup['problem'], Report[]>();
+  const add = (p: ProblemGroup['problem'], r: Report) => by.set(p, [...(by.get(p) ?? []), r]);
+  const filed = (r: Report) => causeOf(r, tenantOf(r)) ?? 'unplaced';
   for (const r of reports) {
-    const p = problemOf(r, tenantOf(r), shiftIds);
-    by.set(p, [...(by.get(p) ?? []), r]);
+    add(filed(r), r);
+    if (shiftIds.includes(r.id)) add('shift', r);
   }
   const count = (rs: Report[], key: (r: Report) => string) =>
     rs.reduce<Record<string, number>>((n, r) => ({ ...n, [key(r)]: (n[key(r)] ?? 0) + 1 }), {});
@@ -52,6 +52,7 @@ export function groupByProblem(
       return {
         problem,
         reports: rs,
+        alsoIn: problem === 'shift' ? count(rs, filed) : {},
         taggedAs: count(rs, (r) => r.meta.intakeTag),
         tenants: [...new Set(rs.map((r) => r.tenant))].sort(),
         channels: count(rs, (r) => r.channel),
@@ -69,8 +70,8 @@ export function mergedInto(rows: Report[], ticket: number): { rows: number; repo
   return { rows: all.length, reports: uniqueById(all) };
 }
 
-// Reports whose intake tag disagrees with the problem they belong to.
+// Reports whose intake tag disagrees with the problem they belong to. Intake only knows causes.
 export function mistagged(g: ProblemGroup): number {
-  if (g.problem === 'unplaced') return 0;
+  if (g.problem === 'unplaced' || g.problem === 'shift') return 0;
   return g.reports.filter((r) => r.meta.intakeTag !== g.problem).length;
 }
