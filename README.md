@@ -44,7 +44,7 @@ npm run build      # prerenders every kb page to build/
 
 `build/` is committed: it is the kb as the desk sees it. Added on top of the export:
 
-- `src/routes/kb/incidents/4471-problems/+page.svx`: #4471 split into its problems (signed `konporeba`)
+- `src/routes/kb/incidents/4471-problems/+page.svx`: #4471 split into its problems (signed with the course ticket)
   → rendered at `build/kb/incidents/4471-problems/index.html`
 - `src/lib/kb/problems.ts`, `src/lib/kb/ProblemTable.svelte`: the logic and table behind it
 - Issues [#1](https://github.com/konporeba/support-kb-4471/issues/1) parser ·
