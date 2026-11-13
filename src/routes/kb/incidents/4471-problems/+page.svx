@@ -3,7 +3,7 @@ layout: runbook
 title: '#4471 · three problems, not one'
 owner: konporeba
 status: open
-reviewed: 2026-11-12
+reviewed: 2026-11-13
 signature: konporeba
 ---
 
@@ -18,8 +18,8 @@ shows two causes and footnotes a third. This page splits the ticket into the pro
 one ticket each, so each one can get its own fix.
 
 <Callout kind="warn">
-Not one issue. The queued parser fix closes only the <code>parser</code> row. The other two keep
-coming after it ships.
+#4471 closed on 5 October with two outcomes: <code>parser</code> fixed, <code>hint</code> won't fix
+(booking-v3 retired). Neither touches <code>shift</code>: that one is still open.
 </Callout>
 
 ## What is in #4471
@@ -51,18 +51,22 @@ and where the report came from, never by the subject.
 The tag intake put on a report is a guess from the reporter's browser. It disagrees with the
 problem often enough that a triage step should not lean on it.
 
-## Where each fix goes
+## Where each one stands
 
-- `parser`: the queued fix. Parse in the tenant's locale, not month first.
-- `hint`: the booking-v3 date field. Print the tenant's own format under it, or read what the
-  hint asks for. The parser fix does not touch this path.
-- `shift`: wherever the invite date is turned into a time zone. A one-day move before or after
-  the parser fix means this one is still open.
+From the engineering update when #4471 closed on 5 October:
+
+- `parser`: **fixed**, `fix(dates): parse dd/mm for eu locales`. Ticket closed. The fix names EU
+  locales; tenants on en-GB write the day first too, so a swap from one of them means the fix
+  missed a locale, not a new bug.
+- `hint`: **won't fix**, the booking-v3 form is retired. Ticket closed as not planned. With no
+  booking-v3 form, no new report can land here.
+- `shift`: **open**. The update does not mention it, and neither outcome above touches the step
+  that turns an invite date into a time zone. A one-day move after 5 October belongs here.
 
 ## For the desk
 
-Merging by subject put three problems in one ticket and marked them known. Until the triage rule
-changes, when a big ticket is marked known, check its cause table before you close new reports
-into it: a second row means a second ticket.
+Merging by subject put three problems in one ticket and marked them known, and closing it closed
+only two of them. Until the triage rule changes, when a big ticket is marked known, check its
+cause table before you close new reports into it: a second row means a second ticket.
 
 <RenderStamp {signature} />
